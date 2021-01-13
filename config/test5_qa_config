@@ -1,0 +1,29 @@
+[Log]
+LOG_LEVEL = INFO
+WRITE_TO_FILE = no
+
+[Hosts]
+DATASTORE_URL = http://localhost:8001/
+PS_SERVER_URL = http://localhost:8002/
+ADMIN_FRONT_END_URL = https://admin.test5.qa.trustonic-alps.com
+KC_REDIRECT_URI = https://auth.test5.qa.trustonic-alps.com
+KC_AUTH_URL = https://auth.test5.qa.trustonic-alps.com/auth/realms/alps/protocol/openid-connect/auth
+KC_TOKEN_URL = https://auth.test5.qa.trustonic-alps.com/auth/realms/alps/protocol/openid-connect/token
+GUI_FRONTEND = https://test5.qa.trustonic-alps.com
+DEVICE_SERVICE_URL = https://device.qa.trustonic-alps.com
+PUBLIC_API_URL = https://api.test5.qa.trustonic-alps.com
+
+[Env]
+SSH_FORW_CMD = ssh -N -L 8001:alps-qa-svc-dynamodb-datastore.apps-shared:80 -L 8002:alps-qa-svc-policy-service.apps-shared:80 ansible@bastion.qa.trustonic-alps.com
+KG_SERVER_URL = https://eu-kcs-api.samsungknox.com
+
+[Test Data]
+OWNER = /autoMNO
+ID_TEST_ADMIN = /autoMNO/admin
+
+[WEB UI]
+WAIT_TIMEOUT = 5
+HEADLESS = yes
+
+[Device Data]
+IMEI = 351724118112762

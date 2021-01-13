@@ -1,0 +1,28 @@
+[Log]
+LOG_LEVEL = INFO
+WRITE_TO_FILE = no
+
+[Hosts]
+DATASTORE_URL = http://localhost:8001/
+PS_SERVER_URL = http://localhost:8002/
+ADMIN_FRONT_END_URL = https://admin.test4.qa.trustonic-alps.com
+KC_REDIRECT_URI = https://auth.test4.qa.trustonic-alps.com
+KC_AUTH_URL = https://auth.test4.qa.trustonic-alps.com/auth/realms/alps/protocol/openid-connect/auth
+KC_TOKEN_URL = https://auth.test4.qa.trustonic-alps.com/auth/realms/alps/protocol/openid-connect/token
+GUI_FRONTEND = https://test4.qa.trustonic-alps.com
+DEVICE_SERVICE_URL = https://device.qa.trustonic-alps.com
+PUBLIC_API_URL = https://api.test4.qa.trustonic-alps.com
+
+[Env]
+SSH_FORW_CMD = ssh -N -L 8001:alps-qa-svc-dynamodb-datastore.apps-shared:80 -L 8002:alps-qa-svc-policy-service.apps-shared:80 ansible@bastion.qa.trustonic-alps.com
+
+[Test Data]
+OWNER = /test4MNO
+ID_TEST_ADMIN = /test4MNO/admin
+
+[WEB UI]
+WAIT_TIMEOUT = 5
+HEADLESS = yes
+
+[Device Data]
+IMEI = 860766048196476

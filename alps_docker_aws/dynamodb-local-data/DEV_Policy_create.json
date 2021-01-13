@@ -1,0 +1,27 @@
+{
+    "AttributeDefinitions": [
+        {
+            "AttributeName": "head",
+            "AttributeType": "S"
+        },
+        {
+            "AttributeName": "tail",
+            "AttributeType": "S"
+        }
+    ],
+    "TableName": "Policy",
+    "KeySchema": [
+        {
+            "AttributeName": "head",
+            "KeyType": "HASH"
+        },
+        {
+            "AttributeName": "tail",
+            "KeyType": "RANGE"
+        }
+    ],
+    "ProvisionedThroughput": {
+        "ReadCapacityUnits": 5,
+        "WriteCapacityUnits": 5
+    }
+}

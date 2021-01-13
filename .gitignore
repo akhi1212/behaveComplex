@@ -1,0 +1,21 @@
+### PyCharm IDEA ###
+.idea
+
+### Python ###
+.pytest_cache
+*.pyc
+__pycache__
+venv
+reports
+
+### Docker ###
+alps_docker_aws/localstack-data
+
+### Temp resources ###
+resources/test_device_enrol.csv
+resources/download
+/resources/screenshots/
+
+### Log files ###
+geckodriver.log
+TestAutomationAPI.log

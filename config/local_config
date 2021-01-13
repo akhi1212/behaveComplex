@@ -1,0 +1,18 @@
+[Log]
+LOG_LEVEL = INFO
+WRITE_TO_FILE = no
+
+[Hosts]
+DATASTORE_URL = http://localhost:8181/
+PS_SERVER_URL = http://localhost:8282/
+ADMIN_FRONT_END_URL = http://localhost:8383
+KC_REDIRECT_URI = http://localhost
+KC_AUTH_URL = http://localhost:8585/auth/realms/alps/protocol/openid-connect/auth
+KC_TOKEN_URL = http://localhost:8585/auth/realms/alps/protocol/openid-connect/token
+GUI_FRONTEND = http://localhost:8989
+DEVICE_SERVICE_URL = http://localhost:8484
+PUBLIC_API_URL = http://localhost:8787
+
+[Test Data]
+OWNER = /anyMNO
+ID_TEST_ADMIN = /anyMNO/admin

@@ -1,0 +1,163 @@
+version: '3.7'
+
+services:
+  dyanamodbservice:
+    image: ${DOCKER_REGISTRY_URL}/alps-dynamodb-datastore:${SNAPSHOT_VERSION}
+    environment:
+      - repository.tablePrefix=DEV_
+      - repository.awsRegion=eu-west-2
+      - repository.dynamoDbEndpoint=http://localstack:4566
+      - deviceController.defaultPolicy=/Trustonic/Default
+      - repository.awsAccessKey=none
+      - repository.awsSecretKey=none
+      - JVM_OPTS=-DES-SERVER=@ELASTIC_SEARCH@ -DSERVICE_NAME=alps-dynamodb-datastore
+    depends_on:
+      - localstack
+    ports:
+      - 8181:8080
+
+  localstack:
+    image: localstack/localstack:0.11.2
+    ports:
+      - "4566:4566" # port for the edge service
+      - "9000:9000"
+    environment:
+      - SERVICES=dynamodb # a list of desired services you want to use.
+      - DEFAULT_REGION=eu-west-2 # This is the region where your localstack mocks to be running
+      - DATA_DIR=/tmp/localstack/data
+      - PORT_WEB_UI=9000
+      - START_WEB=1
+    volumes:
+      - "./localstack-data:/tmp/localstack" # create localstack-data folder in the project root folder
+
+
+  policyservice:
+    image: ${DOCKER_REGISTRY_URL}/alps-policy-service:${SNAPSHOT_VERSION}
+    environment:
+      - DATASTORE_URL=http://dyanamodbservice:8080
+    ports:
+        - 8282:8080
+  adminservice:
+    image: ${DOCKER_REGISTRY_URL}/alps-admin-client:${SNAPSHOT_VERSION}
+    environment:
+      - OAUTH2_KEY=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAj9j1CkiPqf5SkiBmm9azTrNy2hN5DJdSKhYldX20xkVu2NVqkyp+CMalcGoPI0E/4BNC+Gy2s0Edh4GKbrJ2i5XooFOzdnTqiqnCJuUSd5uWtPREBDU+L6wGCg4jfK/m4OAelG5KaGfc04WNJ2wumFcO/NKFFYG0s8vlqhxZCV52IQNMgIb2vSwm8GHhqmb1YghyV/MXnSfofStwSnnlkiVss6aw9qEO/FrTtKdu/oEibYHJl901WPdDScXI2doMqLhsonLrIHe0jdf8pBJ2hBI/TCo2U7GuXx7xQUallDnmBmOP+Tdy05eLACCt9YG8xvGlkp8Xig59x3+Td8xd6wIDAQAB
+      - SECURITY_OAUTH2_RESOURCE_ID=admin-service
+      - JWS_ADMIN=/anyMNO/admin
+      - JWS_PRIVATE-VALUE=MIIEpQIBAAKCAQEA2pA0tdzyrWgwZRBjjvvuaZzGCbaK0+zPetLf3A4GbH/3OoQAuno0ybsR1puR1SGMNkb1kAVPKHAoAj06UqAkgpY+V/pHB5DyI3zTd0Qrr12K+e66n0aw1MhmEDC7AVytozHMLRgIaxaytRNHNtNNfIgRuLq7YiCQzWXyylSuKw46cyGEMcuvlXXxLTi9Ib0Gc66EoOs4C75v1jnGWo0B+UH1lOwFEb+KrKIVu4aSHGrFJNZgIjT1Dn707XlAtX55WHwtDAQuoWtCvmeCtCXVdfNRYpE+M70VgAYyRpFPYPXiUb7+d8zSAhch9LIAI9CkcboS9IKM8HS75Lfv/HhXJQIDAQABAoIBAEeohg+mXE5sXYmVIP8tLFKmGuvuVH/9IV1krA6q7oI+RmGCC/cXwBzv335cTSjysdTN2Q8aHoTkmMl7J5cVeEL0XYZcwVMCu9DUyUROLoB1i+47ziYQeEObXJMsVvOwXiGmXwnd2ky6CWeC5ZNdHgeZWS4W0v7uLGubZEngD6Z/jZ8AQxsryeMkzp/OsKt8aFGMVZDO4lCOxd2EtRBs8CXp+RDQaNKcABiMRlb2v1vZM6InsCkV1kZuKOYLGmdlkB0Qg8AqnB9QX9IAEbjYIK53kIzPXKW3zKkW2xl4xz/TMYCbQYXGixUMlKqjHQ24Ftyk0FHNV5RCvGF+hz1klyECgYEA7ri/d8EMNEwsgD/r1zHk1s7YmhzaQEKsLbfHFc65je/XMhaUMz54Pup8rtzHi3qClEr0K8B8bXp+/xdcnG3320cMrXKo2BBOtJIq1bGuPgzEjKlUVBetiXIB4VjdGuM9k0yaB7wXRPb2wmJrExzrslhpTBAETZkK5LArANWGSP0CgYEA6mHyB7qqMLRNvrIGCfOMgnKuWQSpn3LMuNopOEhqYBIEhDIuk7p2n2Ci0uGXt5k9G/8+HmcbJqEWnf2eiWUiCzTZUogQpQvkpwV1KgzMbRKcf3M4J8Csc8x+n/aa80cQeD7cDCeRRiKW6TCDDGw8ETK1YXW1DFFYahq4vuyp00kCgYEAwAYyVfUeiQ7hGQTSA9cpmbTnPQiKcvhuoZPb++m/DrJnqu3IpnPQq+NZChukE8knMnwcbvk13aaUc0NqhpZasrMzOm4p7Sso9E1DUYPMgjMpA3DN2Zr2R8JCSu99Y7x48nzCxggBu8LgeTpLoSM5YMuHX9zeaUD7JzuiS9h2XU0CgYEA0VK8N07sZCcDMAYKAqUyneYR84qIetCqKYUdPxjdeANfaTjwBBuJiXlisXesado/i1t/fOOUigFgE6XICuj5aIzAckb2ppBimw/yvaVEhT0T63dZdZdL7Pd7Nx2k8RRMjzeEio5j3gFSSdx7jYK0ep+RAgN/uAqGLezDhjAS05ECgYEAmistOltKvVOfqWlwcxancRGE7Jrdkx7Y71TFgqHoPXSdvOfVU/Omj9wpcsgfMqgJJvCwUeJqIVp5th2YWs4GeM1QLmWGrteg5knQVvqPCcR2qG/IdYkzRIcv/472YDRVNWPYOgpm2ojR7x2fbvX7NFflMP2QvVoRIQUsAAlMZ9M=
+      - POLICY_URL=http://policyservice:8080
+      - PROXY_ADDRESS_FORWARDING=true
+    ports:
+        - 8383:8080
+  keycloak:
+    build: keycloak
+    environment:
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=admin
+      - KEYCLOAK_IMPORT=/dev-realm.json
+      - PROXY_ADDRESS_FORWARDING=true
+      - DB_VENDOR=h2
+    command:
+        - '-Dkeycloak.profile.feature.upload_scripts=enabled'
+    ports:
+        - 8585:8080
+  dashboard:
+    image: ${DOCKER_REGISTRY_URL}/alps-admin-dashboard:${SNAPSHOT_VERSION}
+    environment:
+      - KEYCLOAK_URL=http://localhost:8585/auth
+      - KEYCLOAK_REALM=alps
+      - KEYCLOAK_CLIENT_ID=admin-service
+      - KEYCLOAK_CLIENT_SECRET=c1dc6e8e-98ef-422c-b549-783747803476
+      - ROLE_READ=BASIC
+      - ROLE_WRITE=ADVANCED
+      - ROLE_ADMIN=ADMIN
+      - API_URL=http://localhost:8383
+    ports:
+      - 8989:80
+
+  nginx:
+      build: nginx
+      ports:
+          - 443:443
+
+  deviceservice:
+      image: ${DOCKER_REGISTRY_URL}/alps-device-service:${SNAPSHOT_VERSION}
+      environment:
+        - DATASTORE_URL=http://dyanamodbservice:8080
+        - RESOURCE_URL=http://resourceservice:8081
+        - EMAIL_URL=http://emailservice:8082
+        - NOTIFICATION_URL=http://notificationservice:8083
+        - REQUESTLOGGING_TYPE=PRETTY_BODY
+      ports:
+          - 8484:8080
+
+  knoxguardservice:
+      image: ${DOCKER_REGISTRY_URL}/alps-knoxguard-service:${SNAPSHOT_VERSION}
+      environment:
+        - DATASTORE_URL=http://dyanamodbservice:8080
+        - REQUESTLOGGING_TYPE=PRETTY_BODY
+      ports:
+          - 8686:8080
+
+  knoxguardjob:
+    image: ${DOCKER_REGISTRY_URL}/alps-knoxguard-job:${SNAPSHOT_VERSION}
+    restart: always
+    environment:
+      - SERVICE_KNOXGUARD_SERVICE_URL=http://localhost:8686
+      - REQUESTLOGGING_TYPE=PRETTY_BODY
+    network_mode: "host"
+
+  knoxguardstatusjob:
+    image: ${DOCKER_REGISTRY_URL}/alps-knoxguard-status-job:${SNAPSHOT_VERSION}
+    restart: always
+    environment:
+      - SERVICE_KNOXGUARDSERVICEURL=http://localhost:8686
+      - SERVICE_DEVICESERVICEURL=http://localhost:8484
+      - REQUESTLOGGING_TYPE=PRETTY_BODY
+    network_mode: "host"
+
+  adminapiservice:
+    image: ${DOCKER_REGISTRY_URL}/alps-admin-api:${SNAPSHOT_VERSION}
+    environment:
+      - JWS_ADMIN=/anyMNO/admin
+      - JWS_PRIVATE-VALUE=MIIEpQIBAAKCAQEA2pA0tdzyrWgwZRBjjvvuaZzGCbaK0+zPetLf3A4GbH/3OoQAuno0ybsR1puR1SGMNkb1kAVPKHAoAj06UqAkgpY+V/pHB5DyI3zTd0Qrr12K+e66n0aw1MhmEDC7AVytozHMLRgIaxaytRNHNtNNfIgRuLq7YiCQzWXyylSuKw46cyGEMcuvlXXxLTi9Ib0Gc66EoOs4C75v1jnGWo0B+UH1lOwFEb+KrKIVu4aSHGrFJNZgIjT1Dn707XlAtX55WHwtDAQuoWtCvmeCtCXVdfNRYpE+M70VgAYyRpFPYPXiUb7+d8zSAhch9LIAI9CkcboS9IKM8HS75Lfv/HhXJQIDAQABAoIBAEeohg+mXE5sXYmVIP8tLFKmGuvuVH/9IV1krA6q7oI+RmGCC/cXwBzv335cTSjysdTN2Q8aHoTkmMl7J5cVeEL0XYZcwVMCu9DUyUROLoB1i+47ziYQeEObXJMsVvOwXiGmXwnd2ky6CWeC5ZNdHgeZWS4W0v7uLGubZEngD6Z/jZ8AQxsryeMkzp/OsKt8aFGMVZDO4lCOxd2EtRBs8CXp+RDQaNKcABiMRlb2v1vZM6InsCkV1kZuKOYLGmdlkB0Qg8AqnB9QX9IAEbjYIK53kIzPXKW3zKkW2xl4xz/TMYCbQYXGixUMlKqjHQ24Ftyk0FHNV5RCvGF+hz1klyECgYEA7ri/d8EMNEwsgD/r1zHk1s7YmhzaQEKsLbfHFc65je/XMhaUMz54Pup8rtzHi3qClEr0K8B8bXp+/xdcnG3320cMrXKo2BBOtJIq1bGuPgzEjKlUVBetiXIB4VjdGuM9k0yaB7wXRPb2wmJrExzrslhpTBAETZkK5LArANWGSP0CgYEA6mHyB7qqMLRNvrIGCfOMgnKuWQSpn3LMuNopOEhqYBIEhDIuk7p2n2Ci0uGXt5k9G/8+HmcbJqEWnf2eiWUiCzTZUogQpQvkpwV1KgzMbRKcf3M4J8Csc8x+n/aa80cQeD7cDCeRRiKW6TCDDGw8ETK1YXW1DFFYahq4vuyp00kCgYEAwAYyVfUeiQ7hGQTSA9cpmbTnPQiKcvhuoZPb++m/DrJnqu3IpnPQq+NZChukE8knMnwcbvk13aaUc0NqhpZasrMzOm4p7Sso9E1DUYPMgjMpA3DN2Zr2R8JCSu99Y7x48nzCxggBu8LgeTpLoSM5YMuHX9zeaUD7JzuiS9h2XU0CgYEA0VK8N07sZCcDMAYKAqUyneYR84qIetCqKYUdPxjdeANfaTjwBBuJiXlisXesado/i1t/fOOUigFgE6XICuj5aIzAckb2ppBimw/yvaVEhT0T63dZdZdL7Pd7Nx2k8RRMjzeEio5j3gFSSdx7jYK0ep+RAgN/uAqGLezDhjAS05ECgYEAmistOltKvVOfqWlwcxancRGE7Jrdkx7Y71TFgqHoPXSdvOfVU/Omj9wpcsgfMqgJJvCwUeJqIVp5th2YWs4GeM1QLmWGrteg5knQVvqPCcR2qG/IdYkzRIcv/472YDRVNWPYOgpm2ojR7x2fbvX7NFflMP2QvVoRIQUsAAlMZ9M=
+      - POLICY_SERVER=http://policyservice:8080
+      - PROXY_ADDRESS_FORWARDING=true
+      - JVM_OPTS=-DES-SERVER=kibana -DSERVICE_NAME=alps-admin-api
+      - JWT_SECRETS_TEST-ADMIN=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmd37CIVvhvRrZ7YD2jXHVAYiMHNl3TpfeI1g6jDjY3B5fEwkg910j31HPQ4SN+Cq2M1uGGBqyqeqNziJ5PpWgqqiot9rjQewF2jW77DnhDj/ESPHqWhpvt9ojo7sV1LdJPIBXB5+YlIUkSS1+WKpBb3KSNw7argZxolH239w3w5S7tdaOO6FuvS9FRYSmHuPApaNAdTESt9fU4Rjnm5lpmN7M6jjrGOYbeT81ovKEt1FK5eKihMFMAEob+IgnX8qdi0zt0V+4rKc7FCWqxcL2s3TBTtYFA13kxgcWFlzmIXDQ6+14xuimqAGGag4VVIyEkcQScRSFPEQYoDzvuTWTQIDAQAB
+    ports:
+      - 8787:8080
+
+  zteservice:
+      image: ${DOCKER_REGISTRY_URL}/alps-zte-service:${SNAPSHOT_VERSION}
+      environment:
+        - DATASTORE_URL=http://dyanamodbservice:8080
+        - REQUESTLOGGING_TYPE=PRETTY_BODY
+      ports:
+          - 9696:8080
+
+  ztejob:
+    image: ${DOCKER_REGISTRY_URL}/alps-zte-job:${SNAPSHOT_VERSION}
+    restart: always
+    environment:
+      - SERVICE_ZTE_SERVICE_URL=http://localhost:9696
+      - REQUESTLOGGING_TYPE=PRETTY_BODY
+    network_mode: "host"
+
+  scheduledtransitionjob:
+    image: ${DOCKER_REGISTRY_URL}/alps-scheduled-transition-job:${SNAPSHOT_VERSION}
+    restart: always
+    environment:
+      - SERVER_PORT=8888
+      - MANAGEMENT_SERVER_PORT=9797
+      - SERVICE_DATASTORE-URL=http://localhost:8181
+      - SERVICE_POLICY-URL=http://localhost:8282
+      - JWS_PRIVATE-VALUE=MIIEpQIBAAKCAQEA2pA0tdzyrWgwZRBjjvvuaZzGCbaK0+zPetLf3A4GbH/3OoQAuno0ybsR1puR1SGMNkb1kAVPKHAoAj06UqAkgpY+V/pHB5DyI3zTd0Qrr12K+e66n0aw1MhmEDC7AVytozHMLRgIaxaytRNHNtNNfIgRuLq7YiCQzWXyylSuKw46cyGEMcuvlXXxLTi9Ib0Gc66EoOs4C75v1jnGWo0B+UH1lOwFEb+KrKIVu4aSHGrFJNZgIjT1Dn707XlAtX55WHwtDAQuoWtCvmeCtCXVdfNRYpE+M70VgAYyRpFPYPXiUb7+d8zSAhch9LIAI9CkcboS9IKM8HS75Lfv/HhXJQIDAQABAoIBAEeohg+mXE5sXYmVIP8tLFKmGuvuVH/9IV1krA6q7oI+RmGCC/cXwBzv335cTSjysdTN2Q8aHoTkmMl7J5cVeEL0XYZcwVMCu9DUyUROLoB1i+47ziYQeEObXJMsVvOwXiGmXwnd2ky6CWeC5ZNdHgeZWS4W0v7uLGubZEngD6Z/jZ8AQxsryeMkzp/OsKt8aFGMVZDO4lCOxd2EtRBs8CXp+RDQaNKcABiMRlb2v1vZM6InsCkV1kZuKOYLGmdlkB0Qg8AqnB9QX9IAEbjYIK53kIzPXKW3zKkW2xl4xz/TMYCbQYXGixUMlKqjHQ24Ftyk0FHNV5RCvGF+hz1klyECgYEA7ri/d8EMNEwsgD/r1zHk1s7YmhzaQEKsLbfHFc65je/XMhaUMz54Pup8rtzHi3qClEr0K8B8bXp+/xdcnG3320cMrXKo2BBOtJIq1bGuPgzEjKlUVBetiXIB4VjdGuM9k0yaB7wXRPb2wmJrExzrslhpTBAETZkK5LArANWGSP0CgYEA6mHyB7qqMLRNvrIGCfOMgnKuWQSpn3LMuNopOEhqYBIEhDIuk7p2n2Ci0uGXt5k9G/8+HmcbJqEWnf2eiWUiCzTZUogQpQvkpwV1KgzMbRKcf3M4J8Csc8x+n/aa80cQeD7cDCeRRiKW6TCDDGw8ETK1YXW1DFFYahq4vuyp00kCgYEAwAYyVfUeiQ7hGQTSA9cpmbTnPQiKcvhuoZPb++m/DrJnqu3IpnPQq+NZChukE8knMnwcbvk13aaUc0NqhpZasrMzOm4p7Sso9E1DUYPMgjMpA3DN2Zr2R8JCSu99Y7x48nzCxggBu8LgeTpLoSM5YMuHX9zeaUD7JzuiS9h2XU0CgYEA0VK8N07sZCcDMAYKAqUyneYR84qIetCqKYUdPxjdeANfaTjwBBuJiXlisXesado/i1t/fOOUigFgE6XICuj5aIzAckb2ppBimw/yvaVEhT0T63dZdZdL7Pd7Nx2k8RRMjzeEio5j3gFSSdx7jYK0ep+RAgN/uAqGLezDhjAS05ECgYEAmistOltKvVOfqWlwcxancRGE7Jrdkx7Y71TFgqHoPXSdvOfVU/Omj9wpcsgfMqgJJvCwUeJqIVp5th2YWs4GeM1QLmWGrteg5knQVvqPCcR2qG/IdYkzRIcv/472YDRVNWPYOgpm2ojR7x2fbvX7NFflMP2QvVoRIQUsAAlMZ9M=
+      - SERVICE_DAYS-AS-MINUTES-TEST-MODE=true
+    network_mode: "host"
+
+  resourceservice:
+    image: ${DOCKER_REGISTRY_URL}/alps-resource-service:${SNAPSHOT_VERSION}
+    environment:
+      - REQUESTLOGGING_TYPE=PRETTY_BODY
+    ports:
+      - 8888:8080

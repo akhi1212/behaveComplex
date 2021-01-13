@@ -1,0 +1,27 @@
+{
+    "AttributeDefinitions": [
+        {
+            "AttributeName": "imei",
+            "AttributeType": "S"
+        },
+        {
+            "AttributeName": "timestamp",
+            "AttributeType": "N"
+        }
+    ],
+    "TableName": "Device_AUDIT",
+    "KeySchema": [
+        {
+            "AttributeName": "imei",
+            "KeyType": "HASH"
+        },
+        {
+            "AttributeName": "timestamp",
+            "KeyType": "RANGE"
+        }
+    ],
+    "ProvisionedThroughput": {
+        "ReadCapacityUnits": 5,
+        "WriteCapacityUnits": 5
+    }
+}

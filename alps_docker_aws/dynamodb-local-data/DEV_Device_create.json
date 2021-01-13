@@ -1,0 +1,61 @@
+{
+  "AttributeDefinitions": [
+    {
+      "AttributeName": "imei",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "owner",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "serial",
+      "AttributeType": "S"
+    }
+  ],
+  "TableName": "Device",
+  "KeySchema": [
+    {
+      "AttributeName": "imei",
+      "KeyType": "HASH"
+    }
+  ],
+  "ProvisionedThroughput": {
+    "ReadCapacityUnits": 5,
+    "WriteCapacityUnits": 5
+  },
+  "GlobalSecondaryIndexes": [
+    {
+      "IndexName": "serial-index",
+      "KeySchema": [
+        {
+          "AttributeName": "serial",
+          "KeyType": "HASH"
+        }
+      ],
+      "Projection": {
+        "ProjectionType": "ALL"
+      },
+      "ProvisionedThroughput": {
+        "ReadCapacityUnits": 5,
+        "WriteCapacityUnits": 5
+      }
+    },
+    {
+      "IndexName": "owner-index",
+      "KeySchema": [
+        {
+          "AttributeName": "owner",
+          "KeyType": "HASH"
+        }
+      ],
+      "Projection": {
+        "ProjectionType": "ALL"
+      },
+      "ProvisionedThroughput": {
+        "ReadCapacityUnits": 5,
+        "WriteCapacityUnits": 5
+      }
+    }
+  ]
+}
